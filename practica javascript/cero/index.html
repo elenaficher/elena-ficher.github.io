@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio JS</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="scripts.js"></script>
+</head>
+<body>
+    <header>
+        <div class="magia">
+            <button class="boton" onclick="desaparece()">DESAPARECER</button>
+            <button class="boton" onclick="aparece()">APARECER</button>
+        </div>
+        <div class="cuentas">
+            <button class="boton" onclick="resta()">-</button>
+            <button class="boton" onclick="suma()">+</button>
+        </div>
+        <div class="fondos">
+            <button class="boton" onclick="fondoNegro()">FONDO NEGRO</button>
+            <button class="boton" onclick="fondoRojo()">FONDO ROJO</button>
+        </div>
+    </header>
+    <div id="caja">0</div>
+    <h3>presiones los botone o use las flechas del teclado</h3>
+    <footer>
+        <div class="izq">
+            <button class="boton" onclick="moveLeft()">izquierda</button>
+            <button class="boton" onclick="turnLeft()">Girar izq</button>
+        </div>
+        <div class="centro">
+            <button class="boton" onclick="moveUp()">arriba</button>
+            <button class="boton" onclick="moveDown()">abajo</button>
+        </div>
+        <div class="der">
+            <button class="boton" onclick="moveRight()">derecha</button>
+            <button class="boton" onclick="turnRight()">Girar der</button>
+        </div>
+    </footer>    
+</body>
+</html>

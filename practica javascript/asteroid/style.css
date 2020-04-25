@@ -1,0 +1,107 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.pantalla {
+    display: flex;
+    background-color: lightgreen;
+    width: 500px;
+    height: 500px;
+    margin: 20px auto;
+    border-radius: 20px;
+}
+
+#nave {
+    display: flex;
+    width: 15px;
+    height: 30px;
+    background-color: red;
+    border-radius: 50px 50px 0 0;
+    margin: 20px auto;
+    align-self: flex-end;
+    justify-self: center;
+    align-content: center;
+}
+
+.asteroides {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: black;
+    border-radius: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    top: 20px;
+    left: 50%;
+    z-index: 10;
+}
+
+a {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    top: 50px;
+    left: 50px;
+    background-color: lightgreen;
+    color: black;
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 100px;
+    text-decoration: none;
+}
+
+footer {
+    width: 500px;
+    height: 40px;
+    margin: 5px auto;
+    border-radius: 20px;
+    background-color: lightsalmon;
+    line-height: 40px;
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+}
+
+#contador {
+    position: absolute;
+    width: 200px;
+    height: 100px;
+    background-color: cyan;
+    color: black;
+    line-height: 100px;
+    font-size: 50px;
+    text-align: center;
+    border-radius: 20px;
+    border: solid 5px black;
+    top: 200px;
+    left: 20px;
+}
+
+/*
+#asteroide1 {
+    box-shadow: 0 0 0 5px pink;
+}
+
+#asteroide2 {
+    box-shadow: 0 0 0 5px cyan;
+}
+
+#asteroide3 {
+    box-shadow: 0 0 0 5px blue;
+}
+
+#asteroide4 {
+    box-shadow: 0 0 0 5px white;
+}*/
+
+#misil {
+    width: 10px;
+    height: 20px;
+    background-color: violet;
+    border-radius: 50%;
+    margin: auto;
+    display: none;
+}
