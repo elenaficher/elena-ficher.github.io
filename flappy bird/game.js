@@ -8,12 +8,30 @@ const ctx = cvs.getContext('2d');
 let frames = 0;
 const degree = Math.PI/180;
 
-// cargar sprite
+// se carga el sprite, después cada elemento recorta de este sprite lo que necesite para dibujarse
 
 const sprite = new Image();
 sprite.src = "img/sprite.png";
 
-// control del juego
+// se cargan todos los sonidos individualmente
+
+const SCORE_S = new Audio();
+SCORE_S.src = "audio/sfx_point.wav"
+
+const FLAP = new Audio();
+FLAP.src = "audio/sfx_flap.wav"
+
+const HIT = new Audio();
+HIT.src = "audio/sfx_hit.wav"
+
+const SWOOSHING = new Audio();
+SWOOSHING.src = "audio/sfx_swooshing.wav"
+
+const DIE = new Audio();
+DIE.src = "audio/sfx_die.wav"
+
+
+// estados del juego
 
 const state = {
     current : 0,
@@ -22,19 +40,43 @@ const state = {
     over : 2,
 }
 
+// boton de start y reseteo del juego
+
+const startBtn = {
+    x : 120,
+    y : 263,
+    w : 83,
+    h : 29,
+}
+
+// control del juego
+
 cvs.addEventListener('click', function(evt){
     switch(state.current){
         // en el state get ready, si haces click setea el state current a game
         case state.getReady:
             state.current = state.game;
+            SWOOSHING.play();
             break;
         // en el state game, al hacer click ejecuta la funcion flap() de bird
         case state.game:
             bird.flap();
+            FLAP.play();
             break;
         // en el state over, al hacer click setea el state current a get ready
         case state.over:
-            state.current = state.getReady;
+            let rect = cvs.getBoundingClientRect();
+            let clickX = evt.clientX - rect.left;
+            let clickY = evt.clientY - rect.top;
+
+            // chequea si se hace click dentro del área del botón. El botón no es un objeto en si, sino que se detecta que se clickee detro de ciertas coordenadas que limitan el startBtn (está definido en const startBtn mas arriba)
+            if (clickX >= startBtn.x && clickX <= startBtn.x + startBtn.w && clickY >= startBtn.y && clickY <= startBtn.y + startBtn.h){
+                // cuando ocurre, llama a las funciones de reseteo en cada elemento para volver a su estado inicial
+                pipes.reset();
+                bird.speedReset();
+                score.reset();
+                state.current = state.getReady;
+            }
             break;
     }
 });
@@ -109,6 +151,7 @@ const bird = {
     w : 34,
     h : 26,
     frame : 0,
+    radius : 12,
     rotation: 0,
 
     draw : function(){
@@ -128,24 +171,32 @@ const bird = {
     },
 
     update : function(){
+
         // si el juego está en get ready, el período es 10, si no, el período es 5
         this.period = state.current == state.getReady ? 10 : 5;
+
         // incrementa 1 en cada período
         this.frame += frames%this.period == 0 ? 1 : 0;
+
         // va de 0 a 4 en la animación = animation[0] / animation[1] / etc..
         this.frame = this.frame%this.animation.length;
         
         // funcion de salto y caida
         if(state.current == state.getReady){
+
             // en la pantalla get ready el pajaro está en la altura 150
             this.y = 150;
+
             // en la pantalla get ready el pajaro tiene rotacion 0
             this.rotation = 0 * degree;
         }else{
+
             // la velocidad se incrementa por la gravedad
             this.speed += this.gravity;
+
             // la posicion de y se incrementa por la velocidad
             this.y += this.speed;
+
             // si el pajaro tiene la misma posicion del suelo, se detiene, la animacion se detiene en el frame 1 y la rotacion vuelve a 0
             if(this.y + this.h/2 >= cvs.height-fg.h){
                 this.y = cvs.height - fg.h - this.h/2;
@@ -155,6 +206,7 @@ const bird = {
                 // el state pasa a over
                 if(state.current == state.game){
                     state.current = state.over;
+                    DIE.play();
                 }
             }
 
@@ -166,20 +218,27 @@ const bird = {
                 this.rotation = -25 * degree
             }
         }
-    }
+    },
+
+    // funcion para resetear la velocidad (se llama desde el event click del start Btn)
+    speedReset : function(){
+        this.speed = 0;
+    },
 }
 
 
 // se dibujan las cañerias
 
 const pipes = {
-    bottom : {
-        sX : 502,
-        sY : 0
-    },
-    top : {
+    position : [],
+
+    top:{
         sX : 553,
-        sY : 0
+        sY : 0,
+    },
+    bottom:{
+        sX : 502,
+        sY : 0,
     },
 
     w : 53,
@@ -196,10 +255,10 @@ const pipes = {
             let bottomYPos = p.y + this.h + this.gap;
 
             // caño superior
-            ctx.drawImage(sprite, this.top.sX, this.top.sY, this.w, this.h, this.x, topYPos, this.w, this.h);
+            ctx.drawImage(sprite, this.top.sX, this.top.sY, this.w, this.h, p.x, topYPos, this.w, this.h);
 
             // caño inferior
-            ctx.drawImage(sprite, this.bottom.sX, this.bottom.sY, this.w, this.h, this.x, bottomYPos, this.w, this.h);
+            ctx.drawImage(sprite, this.bottom.sX, this.bottom.sY, this.w, this.h, p.x, bottomYPos, this.w, this.h);
         }
     },
 
@@ -208,18 +267,90 @@ const pipes = {
 
         if(frames%100 == 0){
             this.position.push({
-                x : cvx.width,
+                x : cvs.width,
                 y : this.maxYPos * ( Math.random() + 1)
             })
         }
         for(let i = 0; i < this.position.length; i++){
             let p = this.position[i];
 
+            
+            let bottomPipeYPos = p.y + this.h + this.gap;
+
+            // Detección de colision
+
+            // Colisión del caño superior
+            if ( bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + this.w && bird.y + bird.radius > p.y && bird.y - bird.radius < p.y + this.h){
+                state.current = state.over;
+                HIT.play();
+            }
+
+            // Colisión del caño inferior
+            if ( bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + this.w && bird.y + bird.radius > bottomPipeYPos && bird.y - bird.radius < bottomPipeYPos + this.h){
+                state.current = state.over;
+                HIT.play();
+            }
+
+            // Movimiento de los caños hacia la izquierda
             p.x -= this.dx;
+
+            // cuando la posición de la cañeria supera la pantalla se elimina por comando .shift() el elemento del array que contiene esa cañeria
+            if (p.x + this.w <= 0){
+                this.position.shift();
+                score.value += 1;
+                SCORE_S.play();
+                score.best = Math.max(score.value, score.best);
+                localStorage.setItem("best", score.best);
+            }
         }
-    }
+    },
+
+    // funcion para resetear la posición (se llama desde el event click del start Btn)
+    reset : function(){
+        this.position = [];
+    },
 }
 
+
+// contador de puntos
+
+const score = {
+    best : parseInt(localStorage.getItem("best")) || 0,
+    value : 0,
+    draw : function(){
+
+        ctx.fillStyle = "#FFF";
+        ctx.strokeStyle = "#000";
+
+        if (state.current == state.game){
+
+            ctx.lineWidth = 2;
+            ctx.font = "35px Teko";
+
+            // valor de score en pantalla juego
+            ctx.fillText(this.value, cvs.width/2, 50);
+            ctx.strokeText(this.value, cvs.width/2, 50);
+
+        }else if(state.current == state.over){
+
+            ctx.lineWidth = 2;
+            ctx.font = "25px Teko";
+
+            // valor de score en pantalla de over
+            ctx.fillText(this.value, 225, 186);
+            ctx.strokeText(this.value, 225, 186);
+
+            // valor de best en pantalla de over
+            ctx.fillText(this.best, 225, 228);
+            ctx.strokeText(this.best, 225, 228);
+        }
+    },
+
+    // funcion para resetear el conteo del score (se llama desde el event click del start Btn)
+    reset : function(){
+        this.value = 0;
+    },
+}
 
 // mensaje de get ready
 
@@ -266,19 +397,20 @@ function draw(){
     ctx.fillStyle = '#70c5ce'; 
     ctx.fillRect(0, 0, cvs.width, cvs.height);
 
-    // dibuja el fondo y el frente
+    // dibuja el fondo, el frente, el pajaro, las cañerias y las distintas pantallas de juego
     bg.draw();
-    fg.draw();
     bird.draw();
     pipes.draw();
+    fg.draw();
     getReady.draw();
     gameOver.draw();
+    score.draw();
 }
 
 function update(){
     bird.update();
     fg.update();
-    //pipes.update();
+    pipes.update();
 }
 
 
